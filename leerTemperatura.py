@@ -11,8 +11,8 @@ from time import sleep
 import urllib2
 import json
 
-HOST_EMONCMS = "ec2-54-213-91-62.us-west-2.compute.amazonaws.com"
-APIKEY = "c25ceb2b2537468859d5afc4e5aa9095"
+HOST_EMONCMS = "10.8.0.1"
+APIKEY = "" # APIKEY del usuario de emoncms
 
 TIME_OUT = 5
 
@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
 		try:
 			#Inserto el dato de temperatura para ese feed_name
-			url = "http://%s/emoncms/input/post.json?json={%s}&apikey=%s" % (HOST_EMONCMS,datos[:-1],APIKEY)
+			url = "http://%s/bioguard/input/post.json?json={%s}&apikey=%s" % (HOST_EMONCMS,datos[:-1],APIKEY)
 	                urllib2.urlopen(url,timeout=TIME_OUT)
 			
 		except:	

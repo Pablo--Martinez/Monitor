@@ -3,8 +3,8 @@
 import urllib2
 import os
 
-HOST_EMONCMS = "ec2-54-213-91-62.us-west-2.compute.amazonaws.com"
-APIKEY = "c25ceb2b2537468859d5afc4e5aa9095" # apikey del cliente (usuario de emoncms)
+HOST_EMONCMS = "10.8.0.1"
+APIKEY = "" # APIKEY del usuario de emoncms
 PATH_LOG = "/home/pi/Monitor/perdidos.log"
 
 TIME_OUT = 5
@@ -22,7 +22,7 @@ try:
 		datos = linea.split(" ")[1]
 		
 		# Construyo la url a partir de los datos
-		url = "http://%s/emoncms/input/post.json?time=%s&csv={%s}&apikey=%s" % (HOST_EMONCMS,timestamp,datos,APIKEY)
+		url = "http://%s/bioguard/input/post.json?time=%s&csv={%s}&apikey=%s" % (HOST_EMONCMS,timestamp,datos,APIKEY)
 		
 		try:
 			urllib2.urlopen(url,timeout=TIME_OUT)
