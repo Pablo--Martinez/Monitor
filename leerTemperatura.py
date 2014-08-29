@@ -38,12 +38,10 @@ def read_temp(path):
                 temp_c = float(temp_string) / 1000.0
   	        return temp_c
 
-
-if __name__ == "__main__":	
+def leerTemperatura(ciclo):
 	while True:
 		#Obtengo la fecha para almacenar
-		#date = timegm(datetime.now().utctimetuple())	
-		date = datetime.now().strftime('%Y-%m-%d %H:%M')				
+		date = timegm(datetime.now().utctimetuple())				
 
 		#Para generar la estructura del json
 		datos = ""
@@ -69,6 +67,11 @@ if __name__ == "__main__":
 			log.write(linea)
 			log.close() 
 			
-		sleep(60)
+		sleep(60 * int(ciclo))
 	
-
+if __name__ == "__main__":	
+	if(len(sys.argv) == 2):
+		leerTemperatura(int(sys.argv[1]))
+	
+	else:
+		print "Para comenzar a tomar medidas ejecute sudo ./leerTemperatura.py ciclo(mins)"
