@@ -12,7 +12,7 @@ import urllib2
 import json
 
 HOST_EMONCMS = "10.8.0.1"
-APIKEY = "" # APIKEY del usuario de emoncms
+PATH_CONF = "/home/pi/Monitor/rpi.conf"
 
 TIME_OUT = 5
 
@@ -38,7 +38,7 @@ def read_temp(path):
                 temp_c = float(temp_string) / 1000.0
   	        return temp_c
 
-def leerTemperatura(ciclo):
+def leerTemperatura(ciclo,apikey):
 	while True:
 		#Obtengo la fecha para almacenar
 		date = timegm(datetime.now().utctimetuple())				
@@ -58,7 +58,7 @@ def leerTemperatura(ciclo):
 
 		try:
 			#Inserto el dato de temperatura para ese feed_name
-			url = "http://%s/bioguard/input/post.json?json={%s}&apikey=%s" % (HOST_EMONCMS,datos[:-1],APIKEY)
+			url = "http://%s/bioguard/input/post.json?json={%s}&apikey=%s" % (HOST_EMONCMS,datos[:-1],apikey)
 	                urllib2.urlopen(url,timeout=TIME_OUT)
 			
 		except:	
@@ -70,8 +70,14 @@ def leerTemperatura(ciclo):
 		sleep(60 * int(ciclo))
 	
 if __name__ == "__main__":	
-	if(len(sys.argv) == 2):
-		leerTemperatura(int(sys.argv[1]))
 	
-	else:
-		print "Para comenzar a tomar medidas ejecute sudo ./leerTemperatura.py ciclo(mins)"
+	try:
+		conf = open(PATH_CONF,"r")
+		text_conf = conf.readlines()
+		conf.close()
+		ciclo = int(text_conf[1].split(" ")[1][:-1])
+		apikey = text_conf[2].split(" ")[1][:-1]
+		leerTemperatura(ciclo,apikey)
+		
+	except:
+		exit
