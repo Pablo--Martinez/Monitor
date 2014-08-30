@@ -13,6 +13,7 @@ import json
 
 HOST_EMONCMS = "10.8.0.1"
 PATH_CONF = "/home/pi/Monitor/rpi.conf"
+PATH_LOG = "/home/pi/Monitor/perdidos.log"
 
 TIME_OUT = 5
 
@@ -62,8 +63,8 @@ def leerTemperatura(ciclo,apikey):
 	                urllib2.urlopen(url,timeout=TIME_OUT)
 			
 		except:	
-			log = open("perdidos.log","a")
-			linea = date + " " + datos[:-1] + "\n"
+			log = open(PATH_LOG,"a")
+			linea = str(date) + " " + datos[:-1] + "\n"
 			log.write(linea)
 			log.close() 
 			
