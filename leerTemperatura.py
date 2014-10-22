@@ -71,26 +71,22 @@ def leerTemperatura(ciclo,apikey,minimo,maximo):
 			if((not temp_alta[i]) and (temp > maximo)):
 				temp_alta[i] = True							
 				GPIO.output(PIN_ALTA,1)
-                                url = "http://%s/bioguard/input/post.json?json={%s:1}&apikey=%s" % (HOST_EMONCMS,feed_name+"_TempAlta",apikey)
-                                urllib2.urlopen(url,timeout=TIME_OUT)
+				datos += "%s:%i," % (feed_name+"_TempAlta",1)
 
 			elif((temp_alta[i]) and (temp < maximo)):
 				temp_alta[i] = False
 				GPIO.output(PIN_ALTA,0)
-                                url = "http://%s/bioguard/input/post.json?json={%s:0}&apikey=%s" % (HOST_EMONCMS,feed_name+"_TempAlta",apikey)
-                                urllib2.urlopen(url,timeout=TIME_OUT)
+				datos += "%s:%i," % (feed_name+"_TempAlta",0)
 
 			if((not temp_baja[i]) and (temp < minimo)):
 				temp_baja[i] = True
 				GPIO.output(PIN_BAJA,1)
-                                url = "http://%s/bioguard/input/post.json?json={%s:1}&apikey=%s" % (HOST_EMONCMS,feed_name+"_TempBaja",apikey)
-                                urllib2.urlopen(url,timeout=TIME_OUT)
+				datos += "%s:%i," % (feed_name+"_TempBaja",1)
 
 			elif((temp_baja[i]) and (temp > minimo)):
                                 temp_baja[i] = False 
 				GPIO.output(PIN_BAJA,0)
-                                url = "http://%s/bioguard/input/post.json?json={%s:0}&apikey=%s" % (HOST_EMONCMS,feed_name+"_TempBaja",apikey)
-                                urllib2.urlopen(url,timeout=TIME_OUT)
+				datos += "%s:%i" % (feed_name+"_TempBaja",0)
 			
 		try:
 			#Inserto el dato de temperatura para ese feed_name
