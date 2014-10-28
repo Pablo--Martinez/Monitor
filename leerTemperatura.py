@@ -50,6 +50,31 @@ def read_temp(path):
 def leerTemperatura(ciclo,apikey,minimo,maximo):
 	temp_alta = [False,False,False,False]
 	temp_baja = [False,False,False,False]
+	
+	#Obtengo como esta el estado actual de las alamras
+	for i in range(len(glob.glob(base_dir + "28*"))):
+	        path = glob.glob(base_dir + "28*")[i] + "/w1_slave"
+		feed_name = path[20:35].replace("-","")
+		
+		#Actualizo la temp alta
+		url = "http://%s/bioguard/feed/getid.json?name=%s&apikey=%s" % (HOST_EMONCMS,feed_name+"_TempAlta",apikey)
+                id = int(json.load(urllib2.urlopen(url,timeout=TIME_OUT)))
+		
+		url = "http://%s/bioguard/feed/value.json?id=%i&apikey=%s" % (HOST_EMONCMS,id,apikey)
+		alerta = int(json.load(urllib2.urlopen(url,timeout=TIME_OUT)))
+		if(alerta == 1):
+			temp_alta[i] = True
+
+		#Actualizo la temp baja
+		url = "http://%s/bioguard/feed/getid.json?name=%s&apikey=%s" % (HOST_EMONCMS,feed_name+"_TempBaja",apikey)
+                id = int(json.load(urllib2.urlopen(url,timeout=TIME_OUT)))
+
+                url = "http://%s/bioguard/feed/value.json?id=%i&apikey=%s" % (HOST_EMONCMS,id,apikey)
+                alerta = int(json.load(urllib2.urlopen(url,timeout=TIME_OUT)))
+                if(alerta == 1):
+                        temp_baja[i] = True
+		
+	#While principal para obtener datos de manera periodica
 	while True:
 		#Obtengo la fecha para almacenar
 		date = timegm(datetime.now().utctimetuple())				

@@ -42,12 +42,14 @@ def enviarRespaldo(apikey):
 
 if __name__ == "__main__":
 	
-	try:
-		conf = open(PATH_CONF,"r")
-		text_conf = conf.readlines()
-		conf.close()
-		apikey = text_conf[2].split(" ")[1][:-1]
-		enviarRespaldo(apikey)
+	try:	
+		response = os.system("ping -c 5 " + HOST_EMONCMS)
+		if(response == 0):
+			conf = open(PATH_CONF,"r")
+			text_conf = conf.readlines()
+			conf.close()
+			apikey = text_conf[2].split(" ")[1][:-1]
+			enviarRespaldo(apikey)
 		
 	except:
 		exit
