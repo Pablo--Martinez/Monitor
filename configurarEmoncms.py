@@ -23,89 +23,114 @@ def configurarEmoncms(dispositivo,apikey):
 	for i in range(len(glob.glob(base_dir + "28*"))):
 		#Obtengo el id del sensor para crear los inputs correspondientes
 		feed_name = glob.glob(base_dir + "28*")[i][20:].replace("-","")
-			
-		#Creo los inputs para los sensores conectados
-		url = "http://%s/bioguard/input/post.json?json={%s:0}&apikey=%s" % (HOST_EMONCMS,feed_name,apikey)
-		urllib2.urlopen(url,timeout=TIME_OUT)
+
+		#Chequeo que el imput que trato de crear no existe			
+		url = "http://%s/bioguard/feed/getid.json?name=%s&apikey=%s" % (HOST_EMONCMS,feed_name,apikey)
+		ok = json.load(urllib2.urlopen(url,timeout=TIME_OUT))
+
+		#Si el feed no existe es creado
+		if (ok == False): 
+			#Creo los inputs para los sensores conectados
+			url = "http://%s/bioguard/input/post.json?json={%s:0}&apikey=%s" % (HOST_EMONCMS,feed_name,apikey)
+			urllib2.urlopen(url,timeout=TIME_OUT)
 		
-		#Creo los input para las advertencias de los sensores conectados
-		#Temperatura alta
-		url = "http://%s/bioguard/input/post.json?json={%s:0}&apikey=%s" % (HOST_EMONCMS,feed_name + "_TempAlta",apikey)
-		urllib2.urlopen(url,timeout=TIME_OUT)
+			#Creo los input para las advertencias de los sensores conectados
+			#Temperatura alta
+			url = "http://%s/bioguard/input/post.json?json={%s:0}&apikey=%s" % (HOST_EMONCMS,feed_name + "_TempAlta",apikey)
+			urllib2.urlopen(url,timeout=TIME_OUT)
 				
-		#Temperatura baja
-		url = "http://%s/bioguard/input/post.json?json={%s:0}&apikey=%s" % (HOST_EMONCMS,feed_name + "_TempBaja",apikey)
-		urllib2.urlopen(url,timeout=TIME_OUT)
+			#Temperatura baja
+			url = "http://%s/bioguard/input/post.json?json={%s:0}&apikey=%s" % (HOST_EMONCMS,feed_name + "_TempBaja",apikey)
+			urllib2.urlopen(url,timeout=TIME_OUT)
 				
-		#Creo los feeds para que sean los procesos de los inputs
-		#Feed de datos
-		try:
-			url = "http://%s/bioguard/feed/create.json?name=%s&datatype=1&engine=6&options={\"interval\":\"10\"}&apikey=%s" % (HOST_EMONCMS,feed_name,apikey)
-			result = json.load(urllib2.urlopen(url,timeout=TIME_OUT))
+			#Creo los feeds para que sean los procesos de los inputs
+			#Feed de datos
+			try:
+				url = "http://%s/bioguard/feed/create.json?name=%s&datatype=1&engine=6&options={\"interval\":\"10\"}&apikey=%s" % (HOST_EMONCMS,feed_name,apikey)
+				result = json.load(urllib2.urlopen(url,timeout=TIME_OUT))
 		
-			if(result["success"]):
-				feed_id = result["feedid"]
-				url = "http://%s/bioguard/feed/set.json?id=%i&fields={\"tag\":\"%s\"}&apikey=%s" % (HOST_EMONCMS,feed_id,dispositivo,apikey)
-				urllib2.urlopen(url,timeout=TIME_OUT)
-			
-				#Creo los procesos para esos inputs, necesito el input_id
-				url = "http://%s/bioguard/input/list.json&apikey=%s" % (HOST_EMONCMS,apikey)
-				inputs = json.load(urllib2.urlopen(url,timeout=TIME_OUT))
+				if(result["success"]):
+					feed_id = result["feedid"]
+					url = "http://%s/bioguard/feed/set.json?id=%i&fields={\"tag\":\"%s\"}&apikey=%s" % (HOST_EMONCMS,feed_id,dispositivo,apikey)
+					urllib2.urlopen(url,timeout=TIME_OUT)
+				
+					#Creo los procesos para esos inputs, necesito el input_id
+					url = "http://%s/bioguard/input/list.json&apikey=%s" % (HOST_EMONCMS,apikey)
+					inputs = json.load(urllib2.urlopen(url,timeout=TIME_OUT))
+					for i in range(len(inputs)):
+						if(inputs[i]["name"] == feed_name):
+							input_id = int(inputs[i]["id"])
+							url = "http://%s/bioguard/input/process/add.json?inputid=%i&processid=1&arg=%i&newfeedname=%s&options={\"interval\":\"10\",\"engine\":\"6\"}&apikey=%s" % (HOST_EMONCMS,input_id,feed_id,feed_name,apikey)
+							urllib2.urlopen(url,timeout=TIME_OUT)
+							break
+
+			except:
+				print "ADVERTENCIA: Feed %s ya existe" % feed_name
+		
+			#Feed para temperatura alta
+			try:
+				url = "http://%s/bioguard/feed/create.json?name=%s&datatype=1&engine=6&options={\"interval\":\"10\"}&apikey=%s" % (HOST_EMONCMS,feed_name+"_TempAlta",apikey)
+	                        result = json.load(urllib2.urlopen(url,timeout=TIME_OUT))
+
+		                if(result["success"]):
+	        	                feed_id = result["feedid"]
+	                	        url = "http://%s/bioguard/feed/set.json?id=%i&fields={\"tag\":\"%s\"}&apikey=%s" % (HOST_EMONCMS,feed_id,dispositivo,apikey)
+		                        urllib2.urlopen(url,timeout=TIME_OUT)
+
+        		                #Creo los procesos para esos inputs, necesito el input_id
+	        	                url = "http://%s/bioguard/input/list.json&apikey=%s" % (HOST_EMONCMS,apikey)
+	                	        inputs = json.load(urllib2.urlopen(url,timeout=TIME_OUT))
+				
 				for i in range(len(inputs)):
-					if(inputs[i]["name"] == feed_name):
+					if(inputs[i]["name"] == feed_name + "_TempAlta"):
 						input_id = int(inputs[i]["id"])
-						url = "http://%s/bioguard/input/process/add.json?inputid=%i&processid=1&arg=%i&newfeedname=%s&options={\"interval\":\"10\",\"engine\":\"6\"}&apikey=%s" % (HOST_EMONCMS,input_id,feed_id,feed_name,apikey)
+						url = "http://%s/bioguard/input/process/add.json?inputid=%i&processid=1&arg=%i&newfeedname=%s&options={\"interval\":\"10\",\"engine\":\"6\"}&apikey=%s" % (HOST_EMONCMS,input_id,feed_id,feed_name+"_TempAlta",apikey)
 						urllib2.urlopen(url,timeout=TIME_OUT)
 						break
-
-		except:
-			print "ADVERTENCIA: Feed %s ya existe" % feed_name
-		
-		#Feed para temperatura alta
-		try:
-			url = "http://%s/bioguard/feed/create.json?name=%s&datatype=1&engine=6&options={\"interval\":\"10\"}&apikey=%s" % (HOST_EMONCMS,feed_name+"_TempAlta",apikey)
-                        result = json.load(urllib2.urlopen(url,timeout=TIME_OUT))
-
-	                if(result["success"]):
-	                        feed_id = result["feedid"]
-	                        url = "http://%s/bioguard/feed/set.json?id=%i&fields={\"tag\":\"%s\"}&apikey=%s" % (HOST_EMONCMS,feed_id,dispositivo,apikey)
-	                        urllib2.urlopen(url,timeout=TIME_OUT)
-
-        	                #Creo los procesos para esos inputs, necesito el input_id
-	                        url = "http://%s/bioguard/input/list.json&apikey=%s" % (HOST_EMONCMS,apikey)
-	                        inputs = json.load(urllib2.urlopen(url,timeout=TIME_OUT))
-				
-			for i in range(len(inputs)):
-				if(inputs[i]["name"] == feed_name + "_TempAlta"):
-					input_id = int(inputs[i]["id"])
-					url = "http://%s/bioguard/input/process/add.json?inputid=%i&processid=1&arg=%i&newfeedname=%s&options={\"interval\":\"10\",\"engine\":\"6\"}&apikey=%s" % (HOST_EMONCMS,input_id,feed_id,feed_name+"_TempAlta",apikey)
-					urllib2.urlopen(url,timeout=TIME_OUT)
-					break
-		except:
-                        print "ADVERTENCIA: Feed %s ya existe" % feed_name+"_TempAlta"
+			except:
+        	                print "ADVERTENCIA: Feed %s ya existe" % feed_name+"_TempAlta"
 					
-		#Feed para temperatura baja
-		try:
-			url = "http://%s/bioguard/feed/create.json?name=%s&datatype=1&engine=6&options={\"interval\":\"10\"}&apikey=%s" % (HOST_EMONCMS,feed_name+"_TempBaja",apikey)
-                        result = json.load(urllib2.urlopen(url,timeout=TIME_OUT))
+			#Feed para temperatura baja
+			try:
+				url = "http://%s/bioguard/feed/create.json?name=%s&datatype=1&engine=6&options={\"interval\":\"10\"}&apikey=%s" % (HOST_EMONCMS,feed_name+"_TempBaja",apikey)
+	                        result = json.load(urllib2.urlopen(url,timeout=TIME_OUT))
 
-	                if(result["success"]):
-	                        feed_id = result["feedid"]
-	                        url = "http://%s/bioguard/feed/set.json?id=%i&fields={\"tag\":\"%s\"}&apikey=%s" % (HOST_EMONCMS,feed_id,dispositivo,apikey)
-	                        urllib2.urlopen(url,timeout=TIME_OUT)
+		                if(result["success"]):
+	        	                feed_id = result["feedid"]
+	                	        url = "http://%s/bioguard/feed/set.json?id=%i&fields={\"tag\":\"%s\"}&apikey=%s" % (HOST_EMONCMS,feed_id,dispositivo,apikey)
+	                        	urllib2.urlopen(url,timeout=TIME_OUT)
 
-	                        #Creo los procesos para esos inputs, necesito el input_id
-	                        url = "http://%s/bioguard/input/list.json&apikey=%s" % (HOST_EMONCMS,apikey)
-	                        inputs = json.load(urllib2.urlopen(url,timeout=TIME_OUT))
-	                        for i in range(len(inputs)):
-	                                if(inputs[i]["name"] == feed_name + "_TempBaja"):
-	                                        input_id = int(inputs[i]["id"])
-						url = "http://%s/bioguard/input/process/add.json?inputid=%i&processid=1&arg=%i&newfeedname=%s&options={\"interval\":\"10\",\"engine\":\"6\"}&apikey=%s" % (HOST_EMONCMS,input_id,feed_id,feed_name+"_TempBaja",apikey)
-	                                        urllib2.urlopen(url,timeout=TIME_OUT)
-	                                        break
+		                        #Creo los procesos para esos inputs, necesito el input_id
+		                        url = "http://%s/bioguard/input/list.json&apikey=%s" % (HOST_EMONCMS,apikey)
+	        	                inputs = json.load(urllib2.urlopen(url,timeout=TIME_OUT))
+	                	        for i in range(len(inputs)):
+	                        	        if(inputs[i]["name"] == feed_name + "_TempBaja"):
+	                                	        input_id = int(inputs[i]["id"])
+							url = "http://%s/bioguard/input/process/add.json?inputid=%i&processid=1&arg=%i&newfeedname=%s&options={\"interval\":\"10\",\"engine\":\"6\"}&apikey=%s" % (HOST_EMONCMS,input_id,feed_id,feed_name+"_TempBaja",apikey)
+		                                        urllib2.urlopen(url,timeout=TIME_OUT)
+		                                        break
 
-		except:
-                        print "ADVERTENCIA: Feed %s ya existe" % feed_name+"_TempBaja"
+			except:
+        	                print "ADVERTENCIA: Feed %s ya existe" % feed_name+"_TempBaja"
+
+		#Si el feed existe solo se modifica su tag-name
+		else:
+			#Modifico el tag para el feed del sensor
+			feed_id = int(ok)
+			url = "http://%s/bioguard/feed/set.json?id=%i&fields={\"tag\":\"%s\"}&apikey=%s" % (HOST_EMONCMS,feed_id,dispositivo,apikey)
+			urllib2.urlopen(url,timeout=TIME_OUT)
+
+			#Modifico el tag para la alerta de temperatura alta
+			url = "http://%s/bioguard/feed/getid.json?name=%s&apikey=%s" % (HOST_EMONCMS,feed_name+"_TempAlta",apikey)
+                	feed_id = int(json.load(urllib2.urlopen(url,timeout=TIME_OUT)))
+			url = "http://%s/bioguard/feed/set.json?id=%i&fields={\"tag\":\"%s\"}&apikey=%s" % (HOST_EMONCMS,feed_id,dispositivo,apikey)
+                        urllib2.urlopen(url,timeout=TIME_OUT)
+			
+			#Modifico el tag para la alerta de temperatura baja
+			url = "http://%s/bioguard/feed/getid.json?name=%s&apikey=%s" % (HOST_EMONCMS,feed_name+"_TempBaja",apikey)
+                	feed_id = int(json.load(urllib2.urlopen(url,timeout=TIME_OUT)))
+			url = "http://%s/bioguard/feed/set.json?id=%i&fields={\"tag\":\"%s\"}&apikey=%s" % (HOST_EMONCMS,feed_id,dispositivo,apikey)
+                        urllib2.urlopen(url,timeout=TIME_OUT)
 
 
 if __name__ == "__main__":
