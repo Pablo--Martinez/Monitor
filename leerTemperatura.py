@@ -17,11 +17,9 @@ PATH_CONF = "/home/pi/Monitor/rpi.conf"
 PATH_LOG = "/home/pi/Monitor/perdidos.log"
 
 TIME_OUT = 5
-PIN_ALTA = 14
-PIN_BAJA = 18
+PIN_ALTA = 21
+PIN_BAJA = 20
 
-os.system('modprobe w1-gpio')
-os.system('modprobe w1-therm')
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIN_ALTA,GPIO.OUT)
 GPIO.setup(PIN_BAJA,GPIO.OUT)
@@ -126,18 +124,18 @@ def leerTemperatura(ciclo,apikey,minimo,maximo):
 			
 		sleep(60 * int(ciclo))
 	
-if __name__ == "__main__":	
-	
-	try:
-		conf = open(PATH_CONF,"r")
-		text_conf = conf.readlines()
-		conf.close()
-		ciclo = int(text_conf[1].split(" ")[1][:-1])
-		apikey = text_conf[2].split(" ")[1][:-1]
-		minimo = float(text_conf[3].split(" ")[1][:-1])
-		maximo = float(text_conf[4].split(" ")[1][:-1])
-
-		leerTemperatura(ciclo,apikey,minimo,maximo)
-		
-	except:
-		exit
+#if __name__ == "__main__":	
+#	
+#	try:
+#		conf = open(PATH_CONF,"r")
+#		text_conf = conf.readlines()
+#		conf.close()
+#		ciclo = int(text_conf[1].split(" ")[1][:-1])
+#		apikey = text_conf[2].split(" ")[1][:-1]
+#		minimo = float(text_conf[3].split(" ")[1][:-1])
+#		maximo = float(text_conf[4].split(" ")[1][:-1])
+#
+#		leerTemperatura(ciclo,apikey,minimo,maximo)
+#		
+#	except:
+#		exit
