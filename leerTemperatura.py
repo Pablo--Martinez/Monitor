@@ -123,19 +123,3 @@ def leerTemperatura(ciclo,apikey,minimo,maximo):
 			log.close() 
 			
 		sleep(60 * int(ciclo))
-	
-#if __name__ == "__main__":	
-#	
-#	try:
-#		conf = open(PATH_CONF,"r")
-#		text_conf = conf.readlines()
-#		conf.close()
-#		ciclo = int(text_conf[1].split(" ")[1][:-1])
-#		apikey = text_conf[2].split(" ")[1][:-1]
-#		minimo = float(text_conf[3].split(" ")[1][:-1])
-#		maximo = float(text_conf[4].split(" ")[1][:-1])
-#
-#		leerTemperatura(ciclo,apikey,minimo,maximo)
-#		
-#	except:
-#		exit
