@@ -1,26 +1,37 @@
 #!/usr/bin/env python
 
+import alertas
 import threading
 import leerTemperatura
 import sensorPuerta
+import RPi.GPIO as GPIO
 
-#Path donde se encuentra el archivo de configuracion
+# Path donde se encuentra el archivo de configuracion
 PATH_CONF = "/home/pi/Monitor/rpi.conf"
 
-def reconocerAlertaBoton(channel):
+# Tiempo muerto en el que no alerta (sonora/mail) al cliente, en minutos
+TIEMPO_MUERTO = 20
+
+# pin donde esta ubicado el boton que reconoce las alertas
+PIN_BOTON = 27
+
+def reconocerAlertaBoton(channel,alertas):
 	"""
 	Esta funcion es la que acepta la interrucpion del boton para cancelar la alerta sonora
 	"""
-	pass
+	if(alertas['ALERTANDO']):
+		alertas['ALERTANDO'] = False
+		alertas['NO_ALERTAR'] = True
+		timer = threading.Timer(TIEMPO_MUERTO,reestablecerAlertar,args=(alertas,))
+		timer.start()
 
-def reestablecerAlertar():
+def reestablecerAlertar(alertas):
 	"""
 	Esta funcion va a ser ejecutada con un timer que cuando es ejecutada luego de cierto tiempo
 	solamente actualiza una variable global NO_ALERTAR que es usada para que no envie continuamente
 	notificaciones de alerta al servidor
 	"""
-	
-	pass
+	alertas['NO_ALERTAR'] = False	
 
 def main():
 	""" 
@@ -29,6 +40,12 @@ def main():
 	"""
 	
 	try:
+		# El diccionario ALERTAS posee dos campos, ALERTANDO que indica si el sistema esta en modo alerta
+		# y NO_ALERTAR que indica que se recococio la alerta en el sistema y que no debe alertar por
+		# un determinado periodo de tiempo
+		ALERTAS = {'ALERTANDO':False, 'NO_ALERTAR':False}
+
+		# Obtengo los datos del archivo de configuracion
 	        conf = open(PATH_CONF,"r")
 	        text_conf = conf.readlines()
 	        conf.close()
@@ -39,15 +56,24 @@ def main():
 		digitales = text_conf[5].split(" ")[1:-1]
                 tiempo_apertura = int(text_conf[6].split(" ")[1][:-1])
 
-		#Thread encargado de tomar las medidas de temperatura
+		# Activo la interrupcion del boton que reconoce las alertas
+		GPIO.setmode(GPIO.BCM)
+		GPIO.setup(PIN_BOTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+		GPIO.add_event_detect(PIN_BOTON, GPIO.FALLING, callback=lambda x: reconocerAlertaBoton(PIN_BOTON,ALERTAS), bouncetime=500)
+
+		# Configuro las alertas sonoras locales
+		alertas.setupAlertas()
+
+		# Thread encargado de tomar las medidas de temperatura
 		thread_temperaturas = threading.Thread(target=leerTemperatura.leerTemperatura,args=(ciclo,apikey,minimo,maximo))
 		thread_temperaturas.start()
 
-		#Thread encargado de los pines digitales
-		thread_pines = threading.Thread(target=sensorPuerta.main,args=(apikey,digitales,tiempo_apertura))
+		# Thread encargado de los pines digitales
+		thread_pines = threading.Thread(target=sensorPuerta.sensorPuerta,args=(apikey,digitales,tiempo_apertura,ALERTAS))
 		thread_pines.start()
 	
 	except:
+		GPIO.cleanup()
 		exit
 
 #Ejecuto el programa principal
