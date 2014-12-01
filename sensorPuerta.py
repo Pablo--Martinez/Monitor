@@ -3,6 +3,7 @@
 import time
 import RPi.GPIO as GPIO
 import threading
+import alertas
 
 #eligiendo el modo de numeracion de los GPIO
 GPIO.setmode(GPIO.BCM)
@@ -17,10 +18,11 @@ GPIO.setup(LED_PUERTA,GPIO.OUT)
 #Path donde se encuentra el archivo de configuracion
 PATH_CONF = "/home/pi/Monitor/rpi.conf"
 
-def alertar():
-	print "Alerta!"
+def alertar(alerta):
+	alerta['ALERTANDO'] = True
+	alertas.activarAlertaSonora(alerta)
 
-def interrupcionPuerta(pin,tiempo_abierto):
+def interrupcionPuerta(pin,tiempo_abierto,alerta):
 	empezo = False
 
 	GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -33,7 +35,7 @@ def interrupcionPuerta(pin,tiempo_abierto):
 			empezo = True
 			time_init = time.time()
 			print "Inicio: %f" % time_init
-			timer = threading.Timer(tiempo_abierto,alertar)
+			timer = threading.Timer(tiempo_abierto,alertar,args=(alerta,))
 			timer.start()
 			GPIO.output(LED_PUERTA,1)
 		
@@ -45,17 +47,17 @@ def interrupcionPuerta(pin,tiempo_abierto):
 			timer.cancel()
 			GPIO.output(LED_PUERTA,0)
 
-def main(apikey,digitales,tiempo_apertura):
-	 #Configuro el pin de la alerta visual de la puerta y lo seteo apagado
-                GPIO.setup(LED_PUERTA,GPIO.OUT)
-                GPIO.output(LED_PUERTA,0)
+def sensorPuerta(apikey,digitales,tiempo_apertura,alerta):
+	#Configuro el pin de la alerta visual de la puerta y lo seteo apagado
+	GPIO.setup(LED_PUERTA,GPIO.OUT)
+	GPIO.output(LED_PUERTA,0)
 
-                for i in range(6):
-                        if(digitales[i] != "NULL"):
-                                if(digitales[i] == "Contacto"):
-                                        t = threading.Thread(target=interrupcionPuerta,args=(PINES[i],tiempo_apertura))
-                                        t.start()
-                                else:
-                                        #TODO
-                                        pass
+	for i in range(6):
+		if(digitales[i] != "NULL"):
+			if(digitales[i] == "Contacto"):
+				t = threading.Thread(target=interrupcionPuerta,args=(PINES[i],tiempo_apertura,alerta))
+				t.start()
+			else:
+				#TODO
+				pass
 
