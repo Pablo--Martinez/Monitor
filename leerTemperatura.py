@@ -11,6 +11,7 @@ from time import sleep
 import urllib2
 import json
 import RPi.GPIO as GPIO
+import alertas
 
 HOST_EMONCMS = "10.8.0.1"
 PATH_CONF = "/home/pi/Monitor/rpi.conf"
@@ -27,6 +28,10 @@ GPIO.output(PIN_ALTA,0)
 GPIO.output(PIN_BAJA,0)
 
 base_dir = '/sys/bus/w1/devices/'
+
+def alertar(alerta):
+        alerta['ALERTANDO'] = True
+        alertas.activarAlertaSonora(alerta)
 
 def read_temp_raw(path):
 	f = open(path,'r')
@@ -45,7 +50,7 @@ def read_temp(path):
                 temp_c = float(temp_string) / 1000.0
   	        return temp_c
 
-def leerTemperatura(ciclo,apikey,minimo,maximo):
+def leerTemperatura(ciclo,apikey,minimo,maximo,ALERTAS):
 	temp_alta = [False,False,False,False]
 	temp_baja = [False,False,False,False]
 	
@@ -94,6 +99,8 @@ def leerTemperatura(ciclo,apikey,minimo,maximo):
 			if((not temp_alta[i]) and (temp > maximo)):
 				temp_alta[i] = True							
 				GPIO.output(PIN_ALTA,1)
+				alertar(ALERTAS)
+				print "Se paso por arriba"
 				datos += "%s:%i," % (feed_name+"_TempAlta",1)
 
 			elif((temp_alta[i]) and (temp < maximo)):
@@ -104,6 +111,7 @@ def leerTemperatura(ciclo,apikey,minimo,maximo):
 			if((not temp_baja[i]) and (temp < minimo)):
 				temp_baja[i] = True
 				GPIO.output(PIN_BAJA,1)
+				alertar(ALERTAS)
 				datos += "%s:%i," % (feed_name+"_TempBaja",1)
 
 			elif((temp_baja[i]) and (temp > minimo)):
