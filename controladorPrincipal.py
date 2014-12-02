@@ -19,6 +19,7 @@ def reconocerAlertaBoton(channel,alertas):
 	"""
 	Esta funcion es la que acepta la interrucpion del boton para cancelar la alerta sonora
 	"""
+	print "Detecto"
 	if(alertas['ALERTANDO']):
 		alertas['ALERTANDO'] = False
 		alertas['NO_ALERTAR'] = True
@@ -32,6 +33,7 @@ def reestablecerAlertar(alertas):
 	notificaciones de alerta al servidor
 	"""
 	alertas['NO_ALERTAR'] = False	
+	print "NO_ALERTAR = FALSE"
 
 def main():
 	""" 
@@ -49,6 +51,8 @@ def main():
 	        conf = open(PATH_CONF,"r")
 	        text_conf = conf.readlines()
 	        conf.close()
+		
+		dispositivo = text_conf[0].split(" ")[1][:-1]
 	        ciclo = int(text_conf[1].split(" ")[1][:-1])
 	        apikey = text_conf[2].split(" ")[1][:-1]
 	        minimo = float(text_conf[3].split(" ")[1][:-1])
@@ -65,11 +69,11 @@ def main():
 		alertas.setupAlertas()
 
 		# Thread encargado de tomar las medidas de temperatura
-		thread_temperaturas = threading.Thread(target=leerTemperatura.leerTemperatura,args=(ciclo,apikey,minimo,maximo))
+		thread_temperaturas = threading.Thread(target=leerTemperatura.leerTemperatura,args=(ciclo,apikey,minimo,maximo,ALERTAS))
 		thread_temperaturas.start()
 
 		# Thread encargado de los pines digitales
-		thread_pines = threading.Thread(target=sensorPuerta.sensorPuerta,args=(apikey,digitales,tiempo_apertura,ALERTAS))
+		thread_pines = threading.Thread(target=sensorPuerta.sensorPuerta,args=(dispositivo,apikey,digitales,tiempo_apertura,ALERTAS))
 		thread_pines.start()
 	
 	except:
