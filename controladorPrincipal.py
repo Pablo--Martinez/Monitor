@@ -3,7 +3,7 @@
 import alertas
 import threading
 import leerTemperatura
-import sensorPuerta
+import sensoresDigitales
 import RPi.GPIO as GPIO
 
 # Path donde se encuentra el archivo de configuracion
@@ -19,8 +19,7 @@ def reconocerAlertaBoton(channel,alertas):
 	"""
 	Esta funcion es la que acepta la interrucpion del boton para cancelar la alerta sonora
 	"""
-	print "Detecto"
-	if(alertas['ALERTANDO']):
+	if(GPIO.input(PIN_BOTON) == 1 and alertas['ALERTANDO']):
 		alertas['ALERTANDO'] = False
 		alertas['NO_ALERTAR'] = True
 		timer = threading.Timer(TIEMPO_MUERTO,reestablecerAlertar,args=(alertas,))
@@ -46,12 +45,11 @@ def main():
 		# y NO_ALERTAR que indica que se recococio la alerta en el sistema y que no debe alertar por
 		# un determinado periodo de tiempo
 		ALERTAS = {'ALERTANDO':False, 'NO_ALERTAR':False}
-
 		# Obtengo los datos del archivo de configuracion
 	        conf = open(PATH_CONF,"r")
 	        text_conf = conf.readlines()
 	        conf.close()
-		
+
 		dispositivo = text_conf[0].split(" ")[1][:-1]
 	        ciclo = int(text_conf[1].split(" ")[1][:-1])
 	        apikey = text_conf[2].split(" ")[1][:-1]
@@ -62,8 +60,8 @@ def main():
 
 		# Activo la interrupcion del boton que reconoce las alertas
 		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(PIN_BOTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-		GPIO.add_event_detect(PIN_BOTON, GPIO.FALLING, callback=lambda x: reconocerAlertaBoton(PIN_BOTON,ALERTAS), bouncetime=500)
+		GPIO.setup(PIN_BOTON, GPIO.IN)#, pull_up_down=GPIO.PUD_UP)
+		GPIO.add_event_detect(PIN_BOTON, GPIO.RISING, callback=lambda x: reconocerAlertaBoton(PIN_BOTON,ALERTAS), bouncetime=500)
 
 		# Configuro las alertas sonoras locales
 		alertas.setupAlertas()
@@ -73,7 +71,7 @@ def main():
 		thread_temperaturas.start()
 
 		# Thread encargado de los pines digitales
-		thread_pines = threading.Thread(target=sensorPuerta.sensorPuerta,args=(dispositivo,apikey,digitales,tiempo_apertura,ALERTAS))
+		thread_pines = threading.Thread(target=sensoresDigitales.sensoresDigitales,args=(dispositivo,apikey,digitales,tiempo_apertura,ALERTAS))
 		thread_pines.start()
 	
 	except:

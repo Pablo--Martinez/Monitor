@@ -100,7 +100,6 @@ def leerTemperatura(ciclo,apikey,minimo,maximo,ALERTAS):
 				temp_alta[i] = True							
 				GPIO.output(PIN_ALTA,1)
 				alertar(ALERTAS)
-				print "Se paso por arriba"
 				datos += "%s:%i," % (feed_name+"_TempAlta",1)
 
 			elif((temp_alta[i]) and (temp < maximo)):
