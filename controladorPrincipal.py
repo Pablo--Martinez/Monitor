@@ -19,11 +19,19 @@ def reconocerAlertaBoton(channel,alertas):
 	"""
 	Esta funcion es la que acepta la interrucpion del boton para cancelar la alerta sonora
 	"""
-	if(GPIO.input(PIN_BOTON) == 1 and alertas['ALERTANDO']):
-		alertas['ALERTANDO'] = False
-		alertas['NO_ALERTAR'] = True
-		timer = threading.Timer(TIEMPO_MUERTO,reestablecerAlertar,args=(alertas,))
-		timer.start()
+	#if(GPIO.input(PIN_BOTON) == 1 and alertas['ALERTANDO']):
+	#	print "Desactivo"
+	#	alertas['ALERTANDO'] = False
+	#	alertas['NO_ALERTAR'] = True
+	#	timer = threading.Timer(TIEMPO_MUERTO,reestablecerAlertar,args=(alertas,))
+	#	timer.start()
+	while(1):
+		GPIO.wait_for_edge(channel,GPIO.RISING)
+		if(GPIO.input(PIN_BOTON) == 1 and alertas['ALERTANDO']):
+			alertas['ALERTANDO'] = False
+	                alertas['NO_ALERTAR'] = True
+	                timer = threading.Timer(TIEMPO_MUERTO,reestablecerAlertar,args=(alertas,))
+	                timer.start()
 
 def reestablecerAlertar(alertas):
 	"""
@@ -45,6 +53,7 @@ def main():
 		# y NO_ALERTAR que indica que se recococio la alerta en el sistema y que no debe alertar por
 		# un determinado periodo de tiempo
 		ALERTAS = {'ALERTANDO':False, 'NO_ALERTAR':False}
+	
 		# Obtengo los datos del archivo de configuracion
 	        conf = open(PATH_CONF,"r")
 	        text_conf = conf.readlines()
@@ -60,8 +69,10 @@ def main():
 
 		# Activo la interrupcion del boton que reconoce las alertas
 		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(PIN_BOTON, GPIO.IN)#, pull_up_down=GPIO.PUD_UP)
-		GPIO.add_event_detect(PIN_BOTON, GPIO.RISING, callback=lambda x: reconocerAlertaBoton(PIN_BOTON,ALERTAS), bouncetime=500)
+		GPIO.setup(PIN_BOTON, GPIO.IN)
+		thread_boton = threading.Thread(target=reconocerAlertaBoton,args=(PIN_BOTON,ALERTAS))
+		thread_boton.start()
+		#GPIO.add_event_detect(PIN_BOTON, GPIO.RISING, callback=lambda x: reconocerAlertaBoton(PIN_BOTON,ALERTAS), bouncetime=500)
 
 		# Configuro las alertas sonoras locales
 		alertas.setupAlertas()

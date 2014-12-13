@@ -19,6 +19,9 @@ GPIO.setup(LED_PUERTA,GPIO.OUT)
 #Path donde se encuentra el archivo de configuracion
 PATH_CONF = "/home/pi/Monitor/rpi.conf"
 
+#Path donde se guardan los respaldos de las alertas que no son enviadas
+PATH_LOG_ALERTAS = "/home/pi/Monitor/alertas.log"
+
 #Constantes del emoncms
 HOST_EMONCMS = "10.8.0.1"
 TIME_OUT = 5
@@ -33,30 +36,42 @@ def interrupcionDigital(tipo,dispositivo,apikey,pin,tiempo_abierto,alerta):
 	GPIO.setup(pin, GPIO.IN)
 
 	#bucle pricnipal de ejecucion
-	print("\n ...Iniciando el programa...\n\n")
+	print "Iniciando entrada digital %s como %s\n" % (str(PINES.index(pin)+1),tipo)
 	while True:
 		if not empezo:
 			GPIO.wait_for_edge(pin,GPIO.FALLING)
 			if(GPIO.input(pin) == 0):
+				print "Abierto"
 				empezo = True
 				time_init = time.time()
-				print "Inicio: %f" % time_init
 				timer = threading.Timer(tiempo_abierto,alertar,args=(alerta,))
 				timer.start()
 				GPIO.output(LED_PUERTA,1)
 				url = "http://%s/bioguard/input/post.json?json={%s:%i}&apikey=%s" % (HOST_EMONCMS,dispositivo+"_" + tipo +str(PINES.index(pin)+1),1,apikey)
-	                        urllib2.urlopen(url,timeout=TIME_OUT)
+				try:
+					urllib2.urlopen(url,timeout=TIME_OUT)
+				except:
+					log = open(PATH_LOG_ALERTAS,"a")
+	                        	linea = str(timegm(datetime.now().utctimetuple())) + " %s:%i\n" % (str(PINES.index(pin)+1),1)
+	                        	log.write(linea)
+					log.close()
 		
 		else:
 			GPIO.wait_for_edge(pin, GPIO.RISING)
 			if(GPIO.input(pin) == 1):
+				print "Cerrado"
 				empezo = False
 				time_end = time.time() - time_init
-				print "Tiempo abierto: %f \n" % time_end
 				timer.cancel()
 				GPIO.output(LED_PUERTA,0)
 				url = "http://%s/bioguard/input/post.json?json={%s:%i}&apikey=%s" % (HOST_EMONCMS,dispositivo+"_" + tipo + str(PINES.index(pin)+1),0,apikey)
-				urllib2.urlopen(url,timeout=TIME_OUT)
+				try:
+					urllib2.urlopen(url,timeout=TIME_OUT)
+				except:
+					log = open(PATH_LOG_ALERTAS,"a")
+					linea = str(timegm(datetime.now().utctimetuple())) + " %s:%i\n" % (str(PINES.index(pin)+1),0)
+					log.write(linea)
+					log.close()
 
 def sensoresDigitales(dispositivo,apikey,digitales,tiempo_apertura,alerta):
 	#Configuro el pin de la alerta visual de la puerta y lo seteo apagado
