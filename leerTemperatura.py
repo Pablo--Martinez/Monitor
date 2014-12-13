@@ -96,22 +96,24 @@ def leerTemperatura(ciclo,apikey,minimo,maximo,ALERTAS):
                         datos += "%s:%f," % (feed_name,temp)
 
 			#Enciendo los LEDS correspondientes en caso de estar fuera de temperatura
-			if((not temp_alta[i]) and (temp > maximo)):
-				temp_alta[i] = True							
-				GPIO.output(PIN_ALTA,1)
+			if(temp > maximo):
 				alertar(ALERTAS)
-				datos += "%s:%i," % (feed_name+"_TempAlta",1)
+				if((not temp_alta[i])): #Para no enviar de nuevo al servidor
+					temp_alta[i] = True							
+					GPIO.output(PIN_ALTA,1)
+					datos += "%s:%i," % (feed_name+"_TempAlta",1)
 
 			elif((temp_alta[i]) and (temp < maximo)):
 				temp_alta[i] = False
 				GPIO.output(PIN_ALTA,0)
 				datos += "%s:%i," % (feed_name+"_TempAlta",0)
 
-			if((not temp_baja[i]) and (temp < minimo)):
-				temp_baja[i] = True
-				GPIO.output(PIN_BAJA,1)
+			if(temp < minimo):
 				alertar(ALERTAS)
-				datos += "%s:%i," % (feed_name+"_TempBaja",1)
+				if((not temp_baja[i])): #Para no enviar de nuevo al servidor
+					temp_baja[i] = True
+					GPIO.output(PIN_BAJA,1)
+					datos += "%s:%i," % (feed_name+"_TempBaja",1)
 
 			elif((temp_baja[i]) and (temp > minimo)):
                                 temp_baja[i] = False 
