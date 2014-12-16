@@ -12,7 +12,7 @@ import signal
 
 PATH_CONF = "/home/pi/Monitor/rpi.conf"
 SCRIPT_CONF = "/home/pi/Monitor/configurarEmoncms.py"
-SCRIPT_LEER = "/home/pi/Monitor/leerTemperatura.py &"
+SCRIPT_LEER = "/home/pi/Monitor/controladorPrincipal.py &"
 
 def getCommandPID(command_name):
 	# Funcion que me permite obtrener el PID de un proceso, particularmente para el de leerTemperatura.py
@@ -169,8 +169,8 @@ class GUIConfiguracionBG():
 			self.glade.get_object("pin_digital"+str(i+1)).set_sensitive(False)
 		
 		#Se ejecutan los scripts correspondientes
-		#call(SCRIPT_CONF) #Primero se configura en el servidor
-		#popen(SCRIPT_LEER) 		
+		call(SCRIPT_CONF) #Primero se configura en el servidor
+		popen(SCRIPT_LEER) 		
 		
 	def limpiar(self,widget):
 		self.glade.get_object("nombre_valor").set_text("")
@@ -210,8 +210,8 @@ class GUIConfiguracionBG():
 		remove(PATH_CONF)
 
 		#Detengo el script que lee los datos
-		#pid = getCommandPID("./leerTemperatura.py")
-		#kill(pid,signal.SIGTERM)
+		pid = getCommandPID(SCRIPT_LEER.split(" ")[0])
+		kill(pid,signal.SIGTERM)
 	
 	def habilitarDigital1(self,widget):
 		if(widget.get_active()):
@@ -391,9 +391,9 @@ class GUIConfiguracionBG():
 		self.glade.get_object("actualizar_digitales").set_active(False)
 
 		#Relanzo el script que lee los sensores
-		#pid = getCommandPID("./leerTemperatura.py")
-		#kill(pid,signal.SIGTERM)
-		#popen(SCRIPT_LEER)
+		pid = getCommandPID(SCRIPT_LEER.split(" ")[0])
+		kill(pid,signal.SIGTERM)
+		popen(SCRIPT_LEER)
 
 		
 if __name__ == "__main__":
