@@ -19,12 +19,6 @@ def reconocerAlertaBoton(channel,alertas):
 	"""
 	Esta funcion es la que acepta la interrucpion del boton para cancelar la alerta sonora
 	"""
-	#if(GPIO.input(PIN_BOTON) == 1 and alertas['ALERTANDO']):
-	#	print "Desactivo"
-	#	alertas['ALERTANDO'] = False
-	#	alertas['NO_ALERTAR'] = True
-	#	timer = threading.Timer(TIEMPO_MUERTO,reestablecerAlertar,args=(alertas,))
-	#	timer.start()
 	while(1):
 		GPIO.wait_for_edge(channel,GPIO.RISING)
 		if(GPIO.input(PIN_BOTON) == 1 and alertas['ALERTANDO']):
@@ -69,10 +63,10 @@ def main():
 
 		# Activo la interrupcion del boton que reconoce las alertas
 		GPIO.setmode(GPIO.BCM)
+		GPIO.setwarnings(False)
 		GPIO.setup(PIN_BOTON, GPIO.IN)
 		thread_boton = threading.Thread(target=reconocerAlertaBoton,args=(PIN_BOTON,ALERTAS))
 		thread_boton.start()
-		#GPIO.add_event_detect(PIN_BOTON, GPIO.RISING, callback=lambda x: reconocerAlertaBoton(PIN_BOTON,ALERTAS), bouncetime=500)
 
 		# Configuro las alertas sonoras locales
 		alertas.setupAlertas()
