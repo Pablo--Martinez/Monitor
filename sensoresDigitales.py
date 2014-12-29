@@ -41,7 +41,7 @@ def interrupcionDigital(tipo,dispositivo,apikey,pin,tiempo_abierto,alerta):
 		if not empezo:
 			GPIO.wait_for_edge(pin,GPIO.FALLING)
 			if(GPIO.input(pin) == 0):
-				print "Abierto"
+				alerta["ABIERTO"] = True
 				empezo = True
 				time_init = time.time()
 				timer = threading.Timer(tiempo_abierto,alertar,args=(alerta,))
@@ -59,7 +59,7 @@ def interrupcionDigital(tipo,dispositivo,apikey,pin,tiempo_abierto,alerta):
 		else:
 			GPIO.wait_for_edge(pin, GPIO.RISING)
 			if(GPIO.input(pin) == 1):
-				print "Cerrado"
+				alerta["ABIERTO"] = False
 				empezo = False
 				time_end = time.time() - time_init
 				timer.cancel()
