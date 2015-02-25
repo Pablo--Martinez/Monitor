@@ -2,12 +2,7 @@
 
 import urllib2
 import os
-
-HOST_EMONCMS = "10.8.0.1"
-PATH_LOG = "/home/pi/Monitor/perdidos.log"
-PATH_CONF = "/home/pi/Monitor/rpi.conf"
-
-TIME_OUT = 5
+from conf import *
 
 def enviarRespaldo(apikey):
 	try:

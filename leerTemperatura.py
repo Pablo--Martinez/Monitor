@@ -12,14 +12,7 @@ import urllib2
 import json
 import RPi.GPIO as GPIO
 import alertas
-
-HOST_EMONCMS = "10.8.0.1"
-PATH_CONF = "/home/pi/Monitor/rpi.conf"
-PATH_LOG = "/home/pi/Monitor/perdidos.log"
-
-TIME_OUT = 5
-PIN_ALTA = 21
-PIN_BAJA = 20
+from conf import *
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIN_ALTA,GPIO.OUT)

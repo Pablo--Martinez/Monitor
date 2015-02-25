@@ -7,8 +7,7 @@ y las que seran luego enviadas al servidor para enviar un mail/mensaje/llamada a
 import threading
 from time import sleep
 import RPi.GPIO as GPIO
-
-PIN_BUZZER = 16
+from conf import *
 
 def setupAlertas():
 	"""

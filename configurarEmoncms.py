@@ -7,12 +7,7 @@ import subprocess
 import os
 import urllib2
 import json
-
-
-HOST_EMONCMS = "10.8.0.1"
-PATH_CONF = "/home/pi/Monitor/rpi.conf"
-
-TIME_OUT = 5
+from conf import *
 
 os.system('modprobe w1-gpio')
 os.system('modprobe w1-therm')

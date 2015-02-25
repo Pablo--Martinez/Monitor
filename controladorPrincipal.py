@@ -5,15 +5,7 @@ import threading
 import leerTemperatura
 import sensoresDigitales
 import RPi.GPIO as GPIO
-
-# Path donde se encuentra el archivo de configuracion
-PATH_CONF = "/home/pi/Monitor/rpi.conf"
-
-# Tiempo muerto en el que no alerta (sonora/mail) al cliente, en minutos
-TIEMPO_MUERTO = 20
-
-# pin donde esta ubicado el boton que reconoce las alertas
-PIN_BOTON = 27
+from conf import *
 
 def reconocerAlertaBoton(channel,alertas):
 	"""

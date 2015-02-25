@@ -5,26 +5,13 @@ import RPi.GPIO as GPIO
 import threading
 import urllib2
 import alertas
+from conf import *
 
 #eligiendo el modo de numeracion de los GPIO
 GPIO.setmode(GPIO.BCM)
 
-#Constantes del programa
-PINES = [19,13,5,26,6,22]
-LED_PUERTA = 12
-
 #Configuro el pin de la alerta visual de la puerta
 GPIO.setup(LED_PUERTA,GPIO.OUT)
-
-#Path donde se encuentra el archivo de configuracion
-PATH_CONF = "/home/pi/Monitor/rpi.conf"
-
-#Path donde se guardan los respaldos de las alertas que no son enviadas
-PATH_LOG_ALERTAS = "/home/pi/Monitor/alertas.log"
-
-#Constantes del emoncms
-HOST_EMONCMS = "10.8.0.1"
-TIME_OUT = 5
 
 def alertar(alerta):
 	alerta['ALERTANDO'] = True
