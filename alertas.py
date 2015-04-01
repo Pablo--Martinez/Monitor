@@ -5,6 +5,8 @@ Este script solamente contiene las funciones que se engargan de las alertas loca
 y las que seran luego enviadas al servidor para enviar un mail/mensaje/llamada al cliente
 """
 import threading
+import urllib2
+import json
 from time import sleep
 import RPi.GPIO as GPIO
 from conf import *
@@ -36,10 +38,51 @@ def activarAlertaSonora(alertas):
 	buzzer = threading.Thread(target=encenderBuzzer,args=(alertas,))
 	buzzer.start()
 
-def enviarAlerta():
+def enviarMail(tipo_alerta,rom=0,temp=0,puerto=0):
         """
         Esta funcion se encarga de enviar una peticion http al servidor para
         que envie un mail al cliente con los datos correspondientes de la alerta
         """
-        pass
 
+	#Obtengo la APIKEY del usuario
+	conf = open(PATH_CONF,"r")
+	text_conf = conf.readlines()
+	conf.close()
+	apikey = text_conf[2].split(" ")[1][:-1]
+	dispositivo = text_conf[0].split(" ")[1][:-1]
+
+	#Configuro la url dependiendo del tipo de alerta
+	if (tipo_alerta == "TEMP_ALTA"):
+		data = "apikey=%s&dispositivo=%s&tipo_alerta=%s&temp=%s&rom=%s" % (apikey,dispositivo,tipo_alerta,temp,rom)
+
+	elif (tipo_alerta == "TEMP_BAJA"):
+		data = "apikey=%s&dispositivo=%s&tipo_alerta=%s&temp=%s&rom=%s" % (apikey,dispositivo,tipo_alerta,temp,rom)
+	
+	elif (tipo_alerta == "PUERTA"):
+		data = "apikey=%s&dispositivo=%s&tipo_alerta=%s&puerto=%i" % (apikey,dispositivo,tipo_alerta,puerto)
+
+	elif (tipo_alerta == "ALTERNA"):
+		data = "apikey=%s&dispositivo=%s&tipo_alerta=%s&puerto=%i" % (apikey,dispositivo,tipo_alerta,puerto)	
+	
+	intentos = 0
+	while (intentos < 5):
+		ok = json.load(urllib2.urlopen("http://" + HOST_EMONCMS + "/bioguard/enviarAlertas.php",data=data,timeout=TIME_OUT))["enviado"]
+		if (ok):
+			break
+		intentos += 1
+
+def enviarAlertas(alertas,tipo_alerta,rom=0,temp=0,puerto=0):
+	"""
+	Esta funcion se encarga de enviar todas las alertas correspondientes, sean mails, llamadas o msj de texto
+	"""
+
+	#En caso de estar en modo NO_ALERTAR
+	if (not alertas['NO_ALERTAR']):
+		#Se envia un mail
+		mail = threading.Thread(target=enviarMail,args=(tipo_alerta,rom,temp,puerto))
+	        mail.start()
+
+		#Se llama por telefono
+		
+		#Se envia un msj de texto
+	

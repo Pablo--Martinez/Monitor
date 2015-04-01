@@ -13,9 +13,10 @@ GPIO.setmode(GPIO.BCM)
 #Configuro el pin de la alerta visual de la puerta
 GPIO.setup(LED_PUERTA,GPIO.OUT)
 
-def alertar(alerta):
+def alertar(alerta,puerto):
 	alerta['ALERTANDO'] = True
 	alertas.activarAlertaSonora(alerta)
+	alertas.enviarAlertas(alerta,"PUERTA",puerto=puerto);
 
 def interrupcionDigital(tipo,dispositivo,apikey,pin,tiempo_abierto,alerta):
 	empezo = False
@@ -31,7 +32,7 @@ def interrupcionDigital(tipo,dispositivo,apikey,pin,tiempo_abierto,alerta):
 				alerta["ABIERTO"] = True
 				empezo = True
 				time_init = time.time()
-				timer = threading.Timer(tiempo_abierto,alertar,args=(alerta,))
+				timer = threading.Timer(tiempo_abierto,alertar,args=(alerta,PINES.index(pin)+1))
 				timer.start()
 				GPIO.output(LED_PUERTA,1)
 				url = "http://%s/bioguard/input/post.json?json={%s:%i}&apikey=%s" % (HOST_EMONCMS,dispositivo+"_" + tipo +str(PINES.index(pin)+1),1,apikey)

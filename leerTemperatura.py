@@ -22,9 +22,10 @@ GPIO.output(PIN_BAJA,0)
 
 base_dir = '/sys/bus/w1/devices/'
 
-def alertar(alerta):
+def alertar(alerta,temp=0,rom=0):
         alerta['ALERTANDO'] = True
         alertas.activarAlertaSonora(alerta)
+	alertas.enviarAlertas(alerta,"TEMP_ALTA",temp=temp,rom=rom)
 
 def read_temp_raw(path):
 	f = open(path,'r')
@@ -91,8 +92,9 @@ def leerTemperatura(ciclo,apikey,minimo,maximo,ALERTAS):
 			#Enciendo los LEDS correspondientes en caso de estar fuera de temperatura
 			if(temp > maximo):
 				ALERTAS['FUERA_TEMP'] = True
-				alertar(ALERTAS)
+				#alertar(ALERTAS) => ESTABA ACA
 				if((not temp_alta[i])): #Para no enviar de nuevo al servidor
+					alertar(ALERTAS,temp,feed_name)
 					temp_alta[i] = True							
 					GPIO.output(PIN_ALTA,1)
 					datos += "%s:%i," % (feed_name+"_TempAlta",1)
@@ -105,8 +107,9 @@ def leerTemperatura(ciclo,apikey,minimo,maximo,ALERTAS):
 
 			if(temp < minimo):
 				ALERTAS['FUERA_TEMP'] = True
-				alertar(ALERTAS)
+				#alertar(ALERTAS) => ESTABA ACA
 				if((not temp_baja[i])): #Para no enviar de nuevo al servidor
+					alertar(ALERTAS,temp,feed_name)
 					temp_baja[i] = True
 					GPIO.output(PIN_BAJA,1)
 					datos += "%s:%i," % (feed_name+"_TempBaja",1)
