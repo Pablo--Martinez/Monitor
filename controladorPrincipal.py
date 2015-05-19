@@ -13,7 +13,7 @@ def reconocerAlertaBoton(channel,alertas):
 	"""
 	while(1):
 		GPIO.wait_for_edge(channel,GPIO.RISING)
-		if(GPIO.input(PIN_BOTON) == 1 and alertas['ALERTANDO'] and (not alertas['ABIERTO']) and (not alertas['FUERA_TEMP'])):
+		if(GPIO.input(PIN_BOTON) == 1 and alertas['ALERTANDO']): # and (not alertas['ABIERTO']) and (not alertas['FUERA_TEMP'])):
 			alertas['ALERTANDO'] = False
 	                alertas['NO_ALERTAR'] = True
 	                timer = threading.Timer(TIEMPO_MUERTO,reestablecerAlertar,args=(alertas,))
