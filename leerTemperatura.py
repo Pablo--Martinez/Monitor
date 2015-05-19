@@ -92,7 +92,6 @@ def leerTemperatura(ciclo,apikey,minimo,maximo,ALERTAS):
 			#Enciendo los LEDS correspondientes en caso de estar fuera de temperatura
 			if(temp > maximo):
 				ALERTAS['FUERA_TEMP'] = True
-				#alertar(ALERTAS) => ESTABA ACA
 				if((not temp_alta[i])): #Para no enviar de nuevo al servidor
 					alertar(ALERTAS,temp,feed_name)
 					temp_alta[i] = True							
@@ -107,7 +106,6 @@ def leerTemperatura(ciclo,apikey,minimo,maximo,ALERTAS):
 
 			if(temp < minimo):
 				ALERTAS['FUERA_TEMP'] = True
-				#alertar(ALERTAS) => ESTABA ACA
 				if((not temp_baja[i])): #Para no enviar de nuevo al servidor
 					alertar(ALERTAS,temp,feed_name)
 					temp_baja[i] = True
