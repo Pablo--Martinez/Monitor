@@ -54,22 +54,28 @@ def leerTemperatura(ciclo,apikey,minimo,maximo,ALERTAS):
 		feed_name = path[20:35].replace("-","")
 		
 		#Actualizo la temp alta
-		url = "http://%s/bioguard/feed/getid.json?name=%s&apikey=%s" % (HOST_EMONCMS,feed_name+"_TempAlta",apikey)
-                id = int(json.load(urllib2.urlopen(url,timeout=TIME_OUT)))
+		try:
+			url = "http://%s/bioguard/feed/getid.json?name=%s&apikey=%s" % (HOST_EMONCMS,feed_name+"_TempAlta",apikey)
+	                id = int(json.load(urllib2.urlopen(url,timeout=TIME_OUT)))
 		
-		url = "http://%s/bioguard/feed/value.json?id=%i&apikey=%s" % (HOST_EMONCMS,id,apikey)
-		alerta = int(json.load(urllib2.urlopen(url,timeout=TIME_OUT)))
-		if(alerta == 1):
-			temp_alta[i] = True
+			url = "http://%s/bioguard/feed/value.json?id=%i&apikey=%s" % (HOST_EMONCMS,id,apikey)
+			alerta = int(json.load(urllib2.urlopen(url,timeout=TIME_OUT)))
+			if(alerta == 1):
+				temp_alta[i] = True
+		except:
+			pass
 
 		#Actualizo la temp baja
-		url = "http://%s/bioguard/feed/getid.json?name=%s&apikey=%s" % (HOST_EMONCMS,feed_name+"_TempBaja",apikey)
-                id = int(json.load(urllib2.urlopen(url,timeout=TIME_OUT)))
+		try:
+			url = "http://%s/bioguard/feed/getid.json?name=%s&apikey=%s" % (HOST_EMONCMS,feed_name+"_TempBaja",apikey)
+        	        id = int(json.load(urllib2.urlopen(url,timeout=TIME_OUT)))
 
-                url = "http://%s/bioguard/feed/value.json?id=%i&apikey=%s" % (HOST_EMONCMS,id,apikey)
-                alerta = int(json.load(urllib2.urlopen(url,timeout=TIME_OUT)))
-                if(alerta == 1):
-                        temp_baja[i] = True
+                	url = "http://%s/bioguard/feed/value.json?id=%i&apikey=%s" % (HOST_EMONCMS,id,apikey)
+	                alerta = int(json.load(urllib2.urlopen(url,timeout=TIME_OUT)))
+	                if(alerta == 1):
+	                        temp_baja[i] = True
+		except:
+			pass
 		
 	#While principal para obtener datos de manera periodica
 	while True:
@@ -92,6 +98,7 @@ def leerTemperatura(ciclo,apikey,minimo,maximo,ALERTAS):
 			#Enciendo los LEDS correspondientes en caso de estar fuera de temperatura
 			if(temp > maximo):
 				ALERTAS['FUERA_TEMP'] = True
+				#alertar(ALERTAS) => ESTABA ACA
 				if((not temp_alta[i])): #Para no enviar de nuevo al servidor
 					alertar(ALERTAS,temp,feed_name)
 					temp_alta[i] = True							
@@ -106,6 +113,7 @@ def leerTemperatura(ciclo,apikey,minimo,maximo,ALERTAS):
 
 			if(temp < minimo):
 				ALERTAS['FUERA_TEMP'] = True
+				#alertar(ALERTAS) => ESTABA ACA
 				if((not temp_baja[i])): #Para no enviar de nuevo al servidor
 					alertar(ALERTAS,temp,feed_name)
 					temp_baja[i] = True

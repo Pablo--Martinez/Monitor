@@ -24,7 +24,7 @@ def configurarEmoncms(dispositivo,apikey,digitales):
 		#Chequeo que el imput que trato de crear no existe			
 		url = "http://%s/bioguard/feed/getid.json?name=%s&apikey=%s" % (HOST_EMONCMS,feed_name,apikey)
 		ok = json.load(urllib2.urlopen(url,timeout=TIME_OUT))
-
+		
 		#Si el feed no existe es creado
 		if (ok == False): 
 			#Creo los inputs para los sensores conectados
@@ -183,8 +183,8 @@ if __name__ == "__main__":
 		conf.close()
 		nombre = text_conf[0].split(" ")[1][:-1]
 		apikey = text_conf[2].split(" ")[1][:-1]
-		digitales = conf[5].split(" ")[1:-1]
+		digitales = text_conf[5].split(" ")[1:-1]
 		configurarEmoncms(nombre,apikey,digitales)
-				
+	
 	except:
 		exit
