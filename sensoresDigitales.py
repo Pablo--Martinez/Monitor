@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from calendar import timegm
+from datetime import datetime
 import time
 import RPi.GPIO as GPIO
 import threading
